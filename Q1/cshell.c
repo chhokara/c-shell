@@ -257,3 +257,8 @@ int has_a_space(char * buffer)
     }
     return 0;
 }
+
+int execute_command(char * buffer)
+{
+    return 0;
+}
