@@ -3,6 +3,7 @@
 #include <string.h>
 #include <time.h>
 #include <stdlib.h>
+#include <sys/wait.h>
 
 
 void parseTokens(char * buffer);
@@ -12,8 +13,7 @@ int theme(char * token);
 int exit_function();
 int handle_env_vars(char * token);
 int has_a_space(char * buffer);
-int execute_command(char * buffer);
-
+int exec_command(char * buffer);
 
 struct Command {
     char * name;
@@ -141,16 +141,15 @@ void parseTokens(char * buffer)
         }
 
         else {
-            execute_command(buffer);
             char copy[1000] = "";
             strcat(copy, buffer);
+            exec_command(token);
             command_info.name = copy;
             command_info.time = *timeinfo;
             command_info.code = 0;
 
             struct_array[i] = command_info;
             i++;
-            
         }
     }
 
@@ -258,7 +257,39 @@ int has_a_space(char * buffer)
     return 0;
 }
 
-int execute_command(char * buffer)
+int exec_command(char * buffer)
 {
+    int i = 0;
+    int j = 0;
+    char * tokens[1000];    
+
+    while(buffer != NULL)
+    {
+        tokens[i++] = buffer;
+        buffer = strtok(NULL, " ");
+    }
+    tokens[i-1] = strtok(tokens[i-1], "\n");
+
+    char * args[i+1];
+    args[i] = NULL;
+    for(j = 0; j < i; j++)
+    {
+        args[j] = tokens[j];
+    }
+
+    int fc = fork();
+    if(fc < 0)
+    {
+        printf("fork failed\n");
+        exit(1);
+    } 
+    else if(fc == 0) 
+    {
+        execvp(args[0], args);
+    }
+    else 
+    {
+        int waitc = wait(NULL);
+    }
     return 0;
 }
