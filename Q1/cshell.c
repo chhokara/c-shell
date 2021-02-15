@@ -84,16 +84,13 @@ void parseTokens(char * buffer)
 
     char * token = "";
     if(buffer[0] == '$')
-    {
-        char copy_buffer[1000];
-        strcpy(copy_buffer, buffer);
-        char * new_token = strtok(copy_buffer, "\n");
-        command_info.name = new_token;
-        command_info.time = *timeinfo;
-
+    {   
+        char * copy = strdup(buffer);
+        copy = strtok(copy, "\n");
         token = strtok(buffer, "=");
         int exit_status = handle_env_vars(token);
-
+        command_info.name = copy;
+        command_info.time = *timeinfo;
         command_info.code = exit_status;
         struct_array[i] = command_info;
         i++;
@@ -141,8 +138,7 @@ void parseTokens(char * buffer)
         }
 
         else {
-            char copy[1000] = "";
-            strcat(copy, buffer);
+            char * copy = strdup(token);
             exec_command(token);
             command_info.name = copy;
             command_info.time = *timeinfo;
@@ -276,8 +272,17 @@ int exec_command(char * buffer)
     {
         args[j] = tokens[j];
     }
+    
+    int fd[2];
+    char buf[1];
+    if(pipe(fd) == -1)
+    {
+        perror("error creating pipe");
+        return -1;
+    }
 
-    int fc = fork();
+    pid_t fc; 
+    fc = fork();
     if(fc < 0)
     {
         printf("fork failed\n");
@@ -285,11 +290,24 @@ int exec_command(char * buffer)
     } 
     else if(fc == 0) 
     {
+        // child process
+        close(fd[0]);
+        dup2(fd[1], STDOUT_FILENO);
+        dup2(fd[1], STDERR_FILENO);
+        close(fd[1]);
         execvp(args[0], args);
     }
     else 
     {
-        int waitc = wait(NULL);
+        // parent process
+        close(fd[1]);
+        while(read(fd[0], buf, sizeof(buf)) > 0)
+        {
+            write(STDOUT_FILENO, buf, sizeof(buf));
+        }
+        close(fd[0]);
+        wait(NULL);
+
     }
     return 0;
 }
