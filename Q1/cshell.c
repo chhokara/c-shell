@@ -295,7 +295,10 @@ int exec_command(char * buffer)
         dup2(fd[1], STDOUT_FILENO);
         dup2(fd[1], STDERR_FILENO);
         close(fd[1]);
-        execvp(args[0], args);
+        if(execvp(args[0], args) == -1)
+        {
+            printf("command not found\n");
+        }
     }
     else 
     {
