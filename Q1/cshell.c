@@ -14,6 +14,8 @@ int exit_function();
 int handle_env_vars(char * token);
 int has_a_space(char * buffer);
 int exec_command(char * buffer);
+int script_mode(char * file);
+
 
 struct Command {
     char * name;
@@ -43,26 +45,14 @@ int main (int argc, char * argv[])
     {
         buffer[k] = '0';
     }
+    if(argv[1])
+    {
+        script_mode(argv[1]);
+        return 0;
+    }
     while(1)
     {
-        if(strcmp(ansiColor, "red") == 0)
-        {
-            printf("\e[0;31m$cshell ");
-        }
-        else if(strcmp(ansiColor, "green") == 0)
-        {
-            printf("\e[0;32m$cshell ");
-
-        }
-        else if(strcmp(ansiColor, "yellow") == 0)
-        {
-            printf("\e[0;33m$cshell ");
-
-        }
-        else {
-            printf("$cshell ");
-
-        }
+        printf("$cshell ");
 
         if(fgets(buffer, 1000, stdin)) 
         {
@@ -197,15 +187,15 @@ int theme(char * token)
     token = strtok(NULL, "\n");
     if(strcmp(token, "red") == 0)
     {
-        strcpy(ansiColor, "red");
+        printf("\e[0;31m");
     }
     if(strcmp(token, "green") == 0)
     {
-        strcpy(ansiColor, "green");
+        printf("\e[0;32m");
     }
     if(strcmp(token, "yellow") == 0)
     {
-        strcpy(ansiColor, "yellow");
+        printf("\e[0;33m");
     }
     return 0;
 }
@@ -297,6 +287,7 @@ int exec_command(char * buffer)
         close(fd[1]);
         if(execvp(args[0], args) == -1)
         {
+            printf("%s\n", args[0]);
             printf("command not found\n");
         }
     }
@@ -312,5 +303,23 @@ int exec_command(char * buffer)
         wait(NULL);
 
     }
+    return 0;
+}
+
+int script_mode(char * file)
+{
+    FILE* OS_file;
+    char buf[1000];
+    char * token;
+    OS_file = fopen(file, "r");
+
+    while(!feof(OS_file))
+    {
+        fgets(buf, 1000, OS_file);
+        token = strtok(buf, "\n");
+        parseTokens(token);
+    }
+    fclose(OS_file);
+
     return 0;
 }

@@ -1,0 +1,6 @@
+theme green
+print hi
+ls
+log
+hi
+pwd
