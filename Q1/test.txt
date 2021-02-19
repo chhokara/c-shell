@@ -1,5 +1,13 @@
-theme green
-print hi
-ls
-log
+theme blue
+print testing the script mode
 pwd
+theme red
+log
+$VAR=foo
+theme green
+print The value of variable VAR:
+print $VAR
+print This is to test a failure case
+theme red
+hi
+print Bye!

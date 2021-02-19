@@ -154,8 +154,12 @@ int print(char * token)
             if(strcmp(env_array[i].name, token) == 0)
             {
                 printf("%s\n", env_array[i].value);
+                return 0;
             }
+            
         }
+        printf("variable not found\n");
+
     }
     else 
     {
@@ -193,9 +197,9 @@ int theme(char * token)
     {
         printf("\e[0;32m");
     }
-    if(strcmp(token, "yellow") == 0)
+    if(strcmp(token, "blue") == 0)
     {
-        printf("\e[0;33m");
+        printf("\e[0;34m");
     }
     return 0;
 }
@@ -217,6 +221,7 @@ int handle_env_vars(char * token)
             strcpy(env_array[i].value, token);
             return 0;
         }
+        
     }
     struct EnvVar environment_variables;
     strcpy(environment_variables.name, token);
@@ -265,6 +270,7 @@ int exec_command(char * buffer)
     
     int fd[2];
     char buf[1];
+    char errorMsg[100] = "Missing keyword or command, or permission problem\n";
     if(pipe(fd) == -1)
     {
         perror("error creating pipe");
@@ -281,15 +287,15 @@ int exec_command(char * buffer)
     else if(fc == 0) 
     {
         // child process
+        if(execvp(args[0], args) == -1)
+        {
+            printf("%s", errorMsg);
+            _exit(0);
+        }
         close(fd[0]);
         dup2(fd[1], STDOUT_FILENO);
         dup2(fd[1], STDERR_FILENO);
-        close(fd[1]);
-        if(execvp(args[0], args) == -1)
-        {
-            printf("%s\n", args[0]);
-            printf("command not found\n");
-        }
+        close(fd[1]);    
     }
     else 
     {
