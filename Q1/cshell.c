@@ -289,7 +289,7 @@ int exec_command(char * buffer)
         // child process
         if(execvp(args[0], args) == -1)
         {
-            printf("%s", errorMsg);
+            write(STDERR_FILENO, errorMsg, sizeof(errorMsg));
             _exit(0);
         }
         close(fd[0]);
