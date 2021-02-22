@@ -106,7 +106,13 @@ void parseTokens(char * buffer)
             i++;
         }
         else if(strcmp(token, "log") == 0 || strcmp(token, "log\n") == 0) {
-            log_function();
+            command_info.name = "log";
+            command_info.time = *timeinfo;
+            int exit_status = log_function();
+            command_info.code = exit_status;
+
+            struct_array[i] = command_info;
+            i++;
         }
         else if(strcmp(token, "theme") == 0 || strcmp(token, "theme\n") == 0) {
             command_info.name = "theme";
