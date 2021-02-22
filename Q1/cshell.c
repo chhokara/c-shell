@@ -96,7 +96,7 @@ void parseTokens(char * buffer)
             token = strtok(buffer, "\n");
         }
 
-        if(strcmp(token, "print") == 0) {
+        if(strcmp(token, "print") == 0 || strcmp(token, "print\n") == 0) {
             command_info.name = "print";
             command_info.time = *timeinfo;
             int exit_status = print(token);
@@ -105,10 +105,10 @@ void parseTokens(char * buffer)
             struct_array[i] = command_info;
             i++;
         }
-        else if(strcmp(token, "log") == 0) {
+        else if(strcmp(token, "log") == 0 || strcmp(token, "log\n") == 0) {
             log_function();
         }
-        else if(strcmp(token, "theme") == 0) {
+        else if(strcmp(token, "theme") == 0 || strcmp(token, "theme\n") == 0) {
             command_info.name = "theme";
             command_info.time = *timeinfo;
             int exit_status = theme(token);
@@ -117,7 +117,7 @@ void parseTokens(char * buffer)
             struct_array[i] = command_info;
             i++;
         }
-        else if(strcmp(token, "exit") == 0) {
+        else if(strcmp(token, "exit") == 0 || strcmp(token, "exit\n") == 0) {
             command_info.name = "exit";
             command_info.time = *timeinfo;
             int exit_status = exit_function();
@@ -130,6 +130,7 @@ void parseTokens(char * buffer)
         else {
             char * copy = strdup(token);
             exec_command(token);
+            copy = strtok(copy, "\n");
             command_info.name = copy;
             command_info.time = *timeinfo;
             command_info.code = 0;
@@ -217,7 +218,6 @@ int handle_env_vars(char * token)
         if(strcmp(env_array[i].name,token) == 0)
         {
             token = strtok(NULL, "\n");
-            printf("token: %s\n", token);
             strcpy(env_array[i].value, token);
             return 0;
         }
@@ -287,15 +287,16 @@ int exec_command(char * buffer)
     else if(fc == 0) 
     {
         // child process
+        
+        close(fd[0]);
+        dup2(fd[1], STDOUT_FILENO);
+        dup2(fd[1], STDERR_FILENO);
+        close(fd[1]);
         if(execvp(args[0], args) == -1)
         {
             write(STDERR_FILENO, errorMsg, sizeof(errorMsg));
             _exit(0);
-        }
-        close(fd[0]);
-        dup2(fd[1], STDOUT_FILENO);
-        dup2(fd[1], STDERR_FILENO);
-        close(fd[1]);    
+        }    
     }
     else 
     {
